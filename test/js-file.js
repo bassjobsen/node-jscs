@@ -716,13 +716,6 @@ describe('modules/js-file', function() {
             var comment = file.getCommentAfterToken(token);
             assert(comment === undefined);
         });
-
-        it('should not fail if there are no tokens', function() {
-            var file = createJsFile('/*x*/');
-
-            var token = file.getTokenByRangeStart(0);
-            assert(token === undefined);
-        });
     });
 
     describe('getCommentBeforeToken', function() {
