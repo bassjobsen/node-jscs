@@ -3,6 +3,7 @@ var esprima = require('esprima');
 var harmonyEsprima = require('esprima-harmony-jscs');
 var JsFile = require('../lib/js-file');
 var sinon = require('sinon');
+var fs = require('fs');
 
 describe('modules/js-file', function() {
 
@@ -889,6 +890,18 @@ describe('modules/js-file', function() {
         it('should return given filename', function() {
             var file = new JsFile('example.js', 'Hello\nWorld', null);
             assert.equal(file.getFilename(), 'example.js');
+        });
+    });
+
+    describe('render', function() {
+        var relativeDirPath = 'data/render';
+        var absDirPath = __dirname + '/' + relativeDirPath;
+        fs.readdirSync(absDirPath).forEach(function(filename) {
+            it('file ' + relativeDirPath + '/' + filename + ' should be rendered correctly', function() {
+                var source = fs.readFileSync(absDirPath + '/' + filename, 'utf8');
+                var file = createHarmonyJsFile(source);
+                assert.equal(file.render(), source);
+            });
         });
     });
 });
