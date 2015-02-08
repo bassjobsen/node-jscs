@@ -10,7 +10,7 @@ describe('modules/js-file', function() {
         return new JsFile(
             'example.js',
             sources,
-            esprima.parse(sources, {loc: true, range: true, comment: true, tokens: true}),
+            JsFile.parse(sources, esprima),
             options || {}
         );
     }
@@ -19,8 +19,8 @@ describe('modules/js-file', function() {
         return new JsFile(
             'example.js',
             sources,
-            harmonyEsprima.parse(sources, {sourceType: 'module', loc: true, range: true, comment: true, tokens: true}),
-            { es6: true }
+            JsFile.parse(sources, harmonyEsprima),
+            {es6: true}
         );
     }
 
