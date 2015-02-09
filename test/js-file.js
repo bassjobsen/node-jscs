@@ -904,4 +904,97 @@ describe('modules/js-file', function() {
             });
         });
     });
+
+    describe('getNextToken', function() {
+        it('should return next token', function() {
+            var file = createJsFile('x++');
+            var xToken = file.getTokens()[0];
+            assert.equal(xToken.type, 'Identifier');
+            assert.equal(xToken.value, 'x');
+            var nextToken = file.getNextToken(xToken);
+            assert.equal(nextToken.type, 'Punctuator');
+            assert.equal(nextToken.value, '++');
+        });
+
+        it('should return EOF token', function() {
+            var file = createJsFile('x');
+            var xToken = file.getTokens()[0];
+            assert.equal(xToken.type, 'Identifier');
+            assert.equal(xToken.value, 'x');
+            var nextToken = file.getNextToken(xToken);
+            assert.equal(nextToken.type, 'EOF');
+            assert.equal(nextToken.value, '');
+        });
+
+        it('should return undefined for out-of-range token', function() {
+            var file = createJsFile('x');
+            var xToken = file.getTokens()[0];
+            var nextToken = file.getNextToken(file.getNextToken(xToken));
+            assert.equal(nextToken, undefined);
+        });
+
+        it('should ignore comments', function() {
+            var file = createJsFile('x /*123*/');
+            var xToken = file.getTokens()[0];
+            var nextToken = file.getNextToken(xToken, {includeComments: false});
+            assert.equal(nextToken.type, 'EOF');
+            assert.equal(nextToken.value, '');
+        });
+
+        it('should return next comment', function() {
+            var file = createJsFile('x /*123*/');
+            var xToken = file.getTokens()[0];
+            var nextToken = file.getNextToken(xToken, {includeComments: true});
+            assert.equal(nextToken.type, 'Block');
+        });
+
+        it('should return EOF next to comment', function() {
+            var file = createJsFile('x /*123*/');
+            var xToken = file.getComments()[0];
+            var nextToken = file.getNextToken(xToken, {includeComments: true});
+            assert.equal(nextToken.type, 'EOF');
+        });
+    });
+
+    describe('getPrevToken', function() {
+        it('should return previous token', function() {
+            var file = createJsFile('++x');
+            var xToken = file.getTokens()[1];
+            assert.equal(xToken.type, 'Identifier');
+            assert.equal(xToken.value, 'x');
+            var nextToken = file.getPrevToken(xToken);
+            assert.equal(nextToken.type, 'Punctuator');
+            assert.equal(nextToken.value, '++');
+        });
+
+        it('should return undefined for out-of-range token', function() {
+            var file = createJsFile('x');
+            var xToken = file.getTokens()[0];
+            assert.equal(xToken.type, 'Identifier');
+            assert.equal(xToken.value, 'x');
+            var nextToken = file.getPrevToken(xToken);
+            assert.equal(nextToken, undefined);
+        });
+
+        it('should ignore comments', function() {
+            var file = createJsFile('/*123*/ x');
+            var xToken = file.getTokens()[0];
+            var nextToken = file.getPrevToken(xToken, {includeComments: false});
+            assert.equal(nextToken, undefined);
+        });
+
+        it('should return previous comment', function() {
+            var file = createJsFile('/*123*/ x');
+            var xToken = file.getTokens()[0];
+            var nextToken = file.getPrevToken(xToken, {includeComments: true});
+            assert.equal(nextToken.type, 'Block');
+        });
+
+        it('should return undefined next to comment', function() {
+            var file = createJsFile('/*123*/ x');
+            var xToken = file.getComments()[0];
+            var nextToken = file.getPrevToken(xToken, {includeComments: true});
+            assert.equal(nextToken, undefined);
+        });
+    });
 });
