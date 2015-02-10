@@ -717,6 +717,14 @@ describe('modules/js-file', function() {
             var comment = file.getCommentAfterToken(token);
             assert(comment === undefined);
         });
+
+        it('should return undefined after EOF', function() {
+            var file = createJsFile('x');
+
+            var token = file.getTokenByRangeStart(1);
+            var comment = file.getCommentAfterToken(token);
+            assert(comment === undefined);
+        });
     });
 
     describe('getCommentBeforeToken', function() {
@@ -995,6 +1003,55 @@ describe('modules/js-file', function() {
             var xToken = file.getComments()[0];
             var nextToken = file.getPrevToken(xToken, {includeComments: true});
             assert.equal(nextToken, undefined);
+        });
+    });
+
+    describe('iterateTokensByTypeAndValue', function() {
+        it('should match specified type', function() {
+            var file = createJsFile('var x = 1 + 1; /*1*/ //1');
+
+            var spy = sinon.spy();
+            file.iterateTokensByTypeAndValue('Numeric', '1', spy);
+
+            assert.equal(spy.callCount, 2);
+
+            assert.equal(spy.getCall(0).args[0].type, 'Numeric');
+            assert.equal(spy.getCall(0).args[0].value, '1');
+            assert.equal(spy.getCall(1).args[0].type, 'Numeric');
+            assert.equal(spy.getCall(1).args[0].value, '1');
+        });
+
+        it('should accept value list', function() {
+            var file = createJsFile('var x = 1 + 2 + "2"; /*1*/ //2');
+
+            var spy = sinon.spy();
+            file.iterateTokensByTypeAndValue('Numeric', ['1', '2'], spy);
+
+            assert.equal(spy.callCount, 2);
+
+            assert.equal(spy.getCall(0).args[0].type, 'Numeric');
+            assert.equal(spy.getCall(0).args[0].value, '1');
+            assert.equal(spy.getCall(1).args[0].type, 'Numeric');
+            assert.equal(spy.getCall(1).args[0].value, '2');
+        });
+    });
+
+    describe('getTokenPosByRangeStart', function() {
+        it('should return correct token pos', function() {
+            var file = createJsFile('x = 1;');
+            assert.equal(file.getTokenPosByRangeStart(2), 1);
+        });
+    });
+
+    describe('parse', function() {
+        it('should accept esprima options', function() {
+            assert.doesNotThrow(function() {
+                JsFile.parse('2++;', esprima, {tolerant: true});
+            });
+
+            assert.throws(function() {
+                JsFile.parse('2++;', esprima, {tolerant: false});
+            });
         });
     });
 });
